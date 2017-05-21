@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.ArrayList;
@@ -72,7 +74,7 @@ public class SdetProjectApplicationTests {
 	 * @throws Exception
 	 */
 	@Test
-	public void testRequestProject() throws Exception {
+	public void testRequestProject_AllParameters() throws Exception {
 
 		String json = Json.createObjectBuilder()
 	            .add("projectName", "test project number 1")
@@ -92,6 +94,77 @@ public class SdetProjectApplicationTests {
 //		System.out.println(content);
 	}
 
+	@Test
+	public void testRequestProject_OnlyId() throws Exception {
+
+		String json = Json.createObjectBuilder()
+	            .add("projectName", "test project number 1")
+	            .add("projectCost", 5.5)
+	            .add("projectUrl", "http://www.unity3d.com")
+	            .build()
+	            .toString();
+		this.mockMvc
+				.perform(get("/requestproject?projectid=1").accept(MediaType.ALL))
+				.andDo(print())
+				.andExpect(status().is2xxSuccessful())
+				.andDo(print())		
+				.andExpect(content().string(json)).andDo(print());
+	}
+
+
+	@Test
+	public void testRequestProject_OnlyCountry() throws Exception {
+
+		String json = Json.createObjectBuilder()
+	            .add("projectName", "test project number 6")
+	            .add("projectCost", 0.5)
+	            .add("projectUrl", "http://www.unity3d.com")
+	            .build()
+	            .toString();
+		this.mockMvc
+				.perform(get("/requestproject?country=usa").accept(MediaType.ALL))
+				.andDo(print())
+				.andExpect(status().is2xxSuccessful())
+				.andDo(print())		
+				.andExpect(content().string(json)).andDo(print());
+	}
+
+	@Test
+	public void testRequestProject_Country_Number() throws Exception {
+
+		String json = Json.createObjectBuilder()
+	            .add("projectName", "test project number 1")
+	            .add("projectCost", 0.5)
+	            .add("projectUrl", "http://www.unity3d.com")
+	            .build()
+	            .toString();
+		this.mockMvc
+				.perform(get("/requestproject?country=usa&number=20").accept(MediaType.ALL))
+				.andDo(print())
+				.andExpect(status().is2xxSuccessful())
+				.andDo(print())		
+				.andExpect(content().string(json)).andDo(print());
+	}
+
+			
+			
+	@Test
+	public void testRequestProject_NoParam() throws Exception {
+
+		String json = Json.createObjectBuilder()
+	            .add("projectName", "test project number 3")
+	            .add("projectCost", 222.5)
+	            .add("projectUrl", "http://www.unity3d.com")
+	            .build()
+	            .toString();
+		this.mockMvc
+				.perform(get("/requestproject").accept(MediaType.ALL))
+				.andDo(print())
+				.andExpect(status().is2xxSuccessful())
+				.andDo(print())		
+				.andExpect(content().string(json)).andDo(print());
+	}
+	
 	@Test
 	public void testSayHelloWorld() throws Exception {
 		this.mockMvc.perform(get("/hello").accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
