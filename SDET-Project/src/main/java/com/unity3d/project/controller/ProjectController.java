@@ -35,6 +35,11 @@ public class ProjectController {
 	/** Logger **/
 	private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
+	@RequestMapping("/hello")
+	@ResponseBody public String gethelloWorld() {
+		return "Hello World!";
+	}
+
 	@RequestMapping("/createproject")
 	public @ResponseBody String createProject(@RequestBody Project project) throws Exception {
 
@@ -66,7 +71,7 @@ public class ProjectController {
 	 * @return
 	 * @throws org.json.simple.parser.ParseException
 	 */
-	@RequestMapping("/requestproject")
+	@RequestMapping(value = "/requestproject", produces = "application/json")
 	public @ResponseBody String getProject(@RequestParam(value = "projectid", required = false) Long id,
 			@RequestParam(value = "country", required = false) String country,
 			@RequestParam(value = "keyword", required = false) String keyword,
