@@ -131,14 +131,11 @@ public class Project {
 		this.targetKeys = targetKeys;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return "Project [id=" + id + ", projectName=" + projectName + ", projectCost=" + projectCost + ", projectUrl=" + projectUrl + "]";
+		return "Project [id=" + id + ", projectName=" + projectName + ", enabled=" + enabled + ", expiryDate="
+				+ expiryDate + ", targetCountries=" + targetCountries + ", projectCost=" + projectCost + ", projectUrl="
+				+ projectUrl + ", targetKeys=" + targetKeys + "]";
 	}
 
 }
