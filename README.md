@@ -12,37 +12,37 @@ Implemented a solution for the provided QA project using spring boot framework.
 ## Steps to run
 
 1. Clone this repository
-    ```
-    git clone https://github.com/onkarganjewar/unity-sdet-assignment.git
-    ```
+  ```Shell
+  git clone https://github.com/onkarganjewar/unity-sdet-assignment.git
+  ```
 2. Change directory to the '/SDET-Project'
-    ```
-    cd SDET-Project/
-    ```
+  ```Shell
+  cd SDET-Project/
+  ```
 3. Clean the directory (Optional)
-    ```
-    mvn clean
-    ```
+  ```Shell
+  mvn clean
+  ```
 4. Clean and build the project (Will take some time for the first time build)
-    ```
-    mvn clean install
-    ```
+  ```Shell
+  mvn clean install
+  ```
 5. Run all the test cases
-    ```
-    mvn test
-    ```
+  ```Shell
+  mvn test
+  ```
 6. Start the spring boot application server
-    ```
-    mvn spring-boot:run
-    ```
+  ```Shell
+  mvn spring-boot:run
+  ```
 
 
 ## Demo
 
 * Start the server
-```
-mvn spring-boot:run
-```
+  ```Shell
+  mvn spring-boot:run
+  ```
 
 * Application will now run at http://localhost:8080/
 
