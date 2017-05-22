@@ -4,9 +4,11 @@ import java.io.FileWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.springframework.ui.Model;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -50,13 +53,14 @@ public class ProjectController {
 	/** Logger **/
 	private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
-	@RequestMapping("/hello")
+	@RequestMapping("/")
 	@ResponseBody public String gethelloWorld() {
 		return "Hello World!";
 	}
-
+	
 	/**
 	 * For initializing and binding ProjectValidator
+	 * 
 	 * @param binder
 	 */
 	@InitBinder
@@ -64,24 +68,26 @@ public class ProjectController {
 		binder.setValidator(new ProjectValidator());
 	}
 
-	
 	/**
 	 * Create project with given input parameters/attributes.
-	 * @param project Project data model
-	 * @param result 
+	 * 
+	 * @param project
+	 *            Project data model
+	 * @param result
 	 * @return Project details in JSON format
-	 * @throws Exception In case of invalid request
+	 * @throws Exception
+	 *             In case of invalid request
 	 */
 	@RequestMapping(value = "/createproject", method = RequestMethod.POST)
-	public @ResponseBody String createProject(@RequestBody @Valid Project project, BindingResult result) throws Exception {
+	public @ResponseBody String createProject(@RequestBody @Valid Project project, BindingResult result)
+			throws Exception {
 
 		if (result.hasErrors()) {
 			List<ObjectError> errorsList = result.getAllErrors();
 			StringBuffer exceptionMsg = new StringBuffer();
 			if (errorsList.size() >= 2) {
 				throw new IllegalArgumentException("Please input valid projectid AND projectCost AND projectName!!!");
-			}
-			else if (errorsList.size() == 1) {
+			} else if (errorsList.size() == 1) {
 				exceptionMsg.append(errorsList.get(0).getDefaultMessage());
 			}
 			throw new IllegalArgumentException(exceptionMsg.toString());
@@ -100,29 +106,31 @@ public class ProjectController {
 		}
 		return "campaign is successfully created";
 	}
-//
-//	/**
-//	 * Verify the HttpRequest whether it contains valid list of parameters
-//	 * 
-//	 * @param parametersMap
-//	 */
-//	private void verifyCreateProjectRequest(Map<String, String[]> parametersMap) {
-//
-//		/** List containing parameters key parameter set */
-//		List<String> paramKeysList = new ArrayList<String>();
-//
-//		if (parametersMap.size() > 9 || parametersMap.size() <= 1) {
-//			throw new IllegalArgumentException("Please provide valid number of parameters in the URI");
-//		}
-//
-////		for (Map.Entry<String, String[]> entry : parametersMap.entrySet()) {
-////			if (entry.getKey().equalsIgnoreCase(anotherString))
-////			String[] values = entry.getValue();
-////			paramKeysList.add(entry.getKey());
-////			System.out.println(entry.getKey() + "/" + values);
-////		}
-//
-//	}
+	//
+	// /**
+	// * Verify the HttpRequest whether it contains valid list of parameters
+	// *
+	// * @param parametersMap
+	// */
+	// private void verifyCreateProjectRequest(Map<String, String[]>
+	// parametersMap) {
+	//
+	// /** List containing parameters key parameter set */
+	// List<String> paramKeysList = new ArrayList<String>();
+	//
+	// if (parametersMap.size() > 9 || parametersMap.size() <= 1) {
+	// throw new IllegalArgumentException("Please provide valid number of
+	// parameters in the URI");
+	// }
+	//
+	//// for (Map.Entry<String, String[]> entry : parametersMap.entrySet()) {
+	//// if (entry.getKey().equalsIgnoreCase(anotherString))
+	//// String[] values = entry.getValue();
+	//// paramKeysList.add(entry.getKey());
+	//// System.out.println(entry.getKey() + "/" + values);
+	//// }
+	//
+	// }
 
 	/**
 	 * Returns the matched record from the database
@@ -152,7 +160,6 @@ public class ProjectController {
 		System.out.println(id + country + keyword + number);
 		Project returnProject = new Project();
 		JsonObject returnVal;
-		
 
 		if (id == null && country == null && keyword == null && number == null) {
 			List<Project> allProjects = ps.getAllProjects();
