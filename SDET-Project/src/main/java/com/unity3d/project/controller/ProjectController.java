@@ -1,24 +1,16 @@
 package com.unity3d.project.controller;
 
-import java.io.FileWriter;
-import java.security.InvalidAlgorithmParameterException;
+import java.io.FileWriter; 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import org.springframework.ui.Model;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
@@ -150,13 +142,24 @@ public class ProjectController {
 	 *             In case there's any error such as project is not
 	 *             enabled/expired/url is null
 	 */
-	@RequestMapping(value = "/requestproject", produces = "application/json")
+	@RequestMapping(value = "/requestproject", produces = "application/json", method = RequestMethod.GET )
 	public @ResponseBody String getProject(@RequestParam(value = "projectid", required = false) Long id,
 			@RequestParam(value = "country", required = false) String country,
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "number", required = false) Long number, HttpServletRequest request)
 			throws IllegalArgumentException, ProjectException {
 
+//		if (result.hasErrors()) {
+//			List<ObjectError> errorsList = result.getAllErrors();
+//			StringBuffer exceptionMsg = new StringBuffer();
+//			if (errorsList.size() >= 4) {
+//				throw new IllegalArgumentException("Please input at least one parameter!!!");
+//			} else if (errorsList.size() == 1) {
+//				exceptionMsg.append(errorsList.get(0).getDefaultMessage());
+//			}
+//			throw new IllegalArgumentException(exceptionMsg.toString());
+//		}
+		
 		System.out.println(id + country + keyword + number);
 		Project returnProject = new Project();
 		JsonObject returnVal;
@@ -282,7 +285,6 @@ public class ProjectController {
 			List<KeysWrapper> keyset = p.getTargetKeys();
 			for (KeysWrapper k : keyset) {
 				if (k.getNumber() >= number && k.getKeyword().equalsIgnoreCase(keyword)) {
-					logger.info("FOUND EXACT MATCH!!!!!!!!");
 					projectsList.add(p);
 				}
 			}
@@ -307,7 +309,6 @@ public class ProjectController {
 			List<KeysWrapper> keyset = p.getTargetKeys();
 			for (KeysWrapper k : keyset) {
 				if (k.getNumber() >= number) {
-					logger.info("FOUND Greater Number!!!!!!!!");
 					projectsList.add(p);
 					break;
 				}
@@ -336,7 +337,6 @@ public class ProjectController {
 			List<KeysWrapper> keyset = p.getTargetKeys();
 			for (KeysWrapper k : keyset) {
 				if (k.getKeyword().equalsIgnoreCase(keyword)) {
-					logger.info("FOUND Keyword!!!!!!!!");
 					returnList.add(p);
 				}
 			}

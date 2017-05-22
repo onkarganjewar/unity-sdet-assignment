@@ -115,7 +115,6 @@ public class ProjectServiceImpl implements ProjectService {
 				List<String> countries = project.getTargetCountries();
 				for (String s : countries) {
 					if (s.equalsIgnoreCase(country)) {
-						logger.info("FOUND COUNTRY!!!!!!!!");
 						projectsList.add(project);
 						break;
 					}
@@ -218,8 +217,6 @@ public class ProjectServiceImpl implements ProjectService {
 				List<KeysWrapper> keyset = project.getTargetKeys();
 				for (KeysWrapper k : keyset) {
 					if (k.getKeyword().equalsIgnoreCase(keyword)) {
-						logger.info("FOUND KeyWord!!!!!!!!");
-
 						// Service should always return projects which are
 						// enabled,
 						if (project.isEnabled() == false) {
@@ -271,7 +268,6 @@ public class ProjectServiceImpl implements ProjectService {
 			List<KeysWrapper> keyset = p.getTargetKeys();
 			for (KeysWrapper k : keyset) {
 				if (k.getNumber() >= number) {
-					logger.info("FOUND Greater Number!!!!!!!!");
 					projectsList.add(p);
 					break;
 				}
@@ -295,7 +291,6 @@ public class ProjectServiceImpl implements ProjectService {
 		// Expiry date example --- "expiryDate ": "05202017 00:00:00"
 		String[] splitDate = date.split(" ");
 		String dateStr = splitDate[0];
-		logger.debug(dateStr);
 
 		// Get the hour/min/sec time from 00:00:00 format
 		String[] splitTime = splitDate[1].split(":");
@@ -331,24 +326,19 @@ public class ProjectServiceImpl implements ProjectService {
 		yearStr.append(dateArr[7]);
 		int year = Integer.parseInt(yearStr.toString());
 		// Service should never return a project which is expired
-		String expDate = "Expiry Date = " + day + "/" + month + "/" + year;
+//		String expDate = "Expiry Date = " + day + "/" + month + "/" + year;
 
 		Calendar myCal = Calendar.getInstance();
 		Date currDate = myCal.getTime();
-		logger.debug(myCal.getTime().toString());
-		logger.debug(currDate.toString());
 		myCal.set(Calendar.YEAR, year);
 		myCal.set(Calendar.MONTH, month - 1);
 		myCal.set(Calendar.DAY_OF_MONTH, day);
 		myCal.set(year, month - 1, day, hourOfDay, minute, second);
 		Date expiry = myCal.getTime();
-		logger.debug(expDate);
-		logger.debug(currDate.toString());
 
 		// If today’s date is above expiry date then project should not be
 		// selected.
 		if (currDate.after(expiry)) {
-			logger.error("Project expired !!!!!");
 			return false;
 		}
 		return true;
