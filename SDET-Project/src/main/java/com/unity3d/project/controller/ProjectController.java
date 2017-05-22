@@ -1,24 +1,39 @@
 package com.unity3d.project.controller;
 
 import java.io.FileWriter;
+import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.unity3d.project.exception.ProjectException;
 import com.unity3d.project.model.KeysWrapper;
 import com.unity3d.project.model.Project;
 import com.unity3d.project.service.ProjectService;
+import com.unity3d.project.util.ProjectValidator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,8 +55,37 @@ public class ProjectController {
 		return "Hello World!";
 	}
 
-	@RequestMapping("/createproject")
-	public @ResponseBody String createProject(@RequestBody Project project) throws Exception {
+	/**
+	 * For initializing and binding ProjectValidator
+	 * @param binder
+	 */
+	@InitBinder
+	protected void initBinder(WebDataBinder binder) {
+		binder.setValidator(new ProjectValidator());
+	}
+
+	
+	/**
+	 * Create project with given input parameters/attributes.
+	 * @param project Project data model
+	 * @param result 
+	 * @return Project details in JSON format
+	 * @throws Exception In case of invalid request
+	 */
+	@RequestMapping(value = "/createproject", method = RequestMethod.POST)
+	public @ResponseBody String createProject(@RequestBody @Valid Project project, BindingResult result) throws Exception {
+
+		if (result.hasErrors()) {
+			List<ObjectError> errorsList = result.getAllErrors();
+			StringBuffer exceptionMsg = new StringBuffer();
+			if (errorsList.size() >= 2) {
+				throw new IllegalArgumentException("Please input valid projectid AND projectCost AND projectName!!!");
+			}
+			else if (errorsList.size() == 1) {
+				exceptionMsg.append(errorsList.get(0).getDefaultMessage());
+			}
+			throw new IllegalArgumentException(exceptionMsg.toString());
+		}
 
 		// Convert the POJO into a json string format
 		Gson gson = new GsonBuilder().create();
@@ -56,6 +100,29 @@ public class ProjectController {
 		}
 		return "campaign is successfully created";
 	}
+//
+//	/**
+//	 * Verify the HttpRequest whether it contains valid list of parameters
+//	 * 
+//	 * @param parametersMap
+//	 */
+//	private void verifyCreateProjectRequest(Map<String, String[]> parametersMap) {
+//
+//		/** List containing parameters key parameter set */
+//		List<String> paramKeysList = new ArrayList<String>();
+//
+//		if (parametersMap.size() > 9 || parametersMap.size() <= 1) {
+//			throw new IllegalArgumentException("Please provide valid number of parameters in the URI");
+//		}
+//
+////		for (Map.Entry<String, String[]> entry : parametersMap.entrySet()) {
+////			if (entry.getKey().equalsIgnoreCase(anotherString))
+////			String[] values = entry.getValue();
+////			paramKeysList.add(entry.getKey());
+////			System.out.println(entry.getKey() + "/" + values);
+////		}
+//
+//	}
 
 	/**
 	 * Returns the matched record from the database
@@ -69,18 +136,23 @@ public class ProjectController {
 	 * @param projectCost
 	 *            Project cost (number)
 	 * @return
-	 * @throws org.json.simple.parser.ParseException
+	 * @throws IllegalArgumentException
+	 *             If the data input file is empty
+	 * @throws ProjectException
+	 *             In case there's any error such as project is not
+	 *             enabled/expired/url is null
 	 */
 	@RequestMapping(value = "/requestproject", produces = "application/json")
 	public @ResponseBody String getProject(@RequestParam(value = "projectid", required = false) Long id,
 			@RequestParam(value = "country", required = false) String country,
 			@RequestParam(value = "keyword", required = false) String keyword,
-			@RequestParam(value = "number", required = false) Long number)
-			throws org.json.simple.parser.ParseException {
+			@RequestParam(value = "number", required = false) Long number, HttpServletRequest request)
+			throws IllegalArgumentException, ProjectException {
 
 		System.out.println(id + country + keyword + number);
 		Project returnProject = new Project();
 		JsonObject returnVal;
+		
 
 		if (id == null && country == null && keyword == null && number == null) {
 			List<Project> allProjects = ps.getAllProjects();
@@ -109,8 +181,8 @@ public class ProjectController {
 			// Return project with highest cost out of selected ones.
 			// If any of the url param is not matched then should return no
 			// project found message
-			if (searchProjectByCountry(country, number, keyword) != null) {
-				returnProject = searchProjectByCountry(country, number, keyword);
+			returnProject = searchProjectByCountry(country, number, keyword);
+			if (returnProject != null) {
 				returnVal = Json.createObjectBuilder().add("projectName", returnProject.getProjectName())
 						.add("projectCost", returnProject.getProjectCost())
 						.add("projectUrl", returnProject.getProjectUrl()).build();
@@ -132,18 +204,16 @@ public class ProjectController {
 	 * @param keyword
 	 *            Keywords
 	 * @return Project having highest cost after filtering
+	 * @throws ProjectException
+	 *             In case there's any error such as project is not
+	 *             enabled/expired/url is null
 	 */
-	private Project searchProjectByCountry(String country, Long number, String keyword) {
+	private Project searchProjectByCountry(String country, Long number, String keyword) throws ProjectException {
 
 		/** Stores a list of project records **/
 		List<Project> pList = new ArrayList<Project>();
 		// Get projects by only country name
 		pList = ps.getProjectListByCountry(country);
-
-		// Retrieve all the results for the target country
-		if (pList == null) {
-			throw new NoSuchElementException("Records not found with given target country name");
-		}
 
 		// 1. Country Name Present
 		// 2. Country Name && KeyWord present
