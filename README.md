@@ -1,4 +1,4 @@
-# Unity Technologies SDET -- Coding Assignment
+# Unity Technologies -- SDET Coding Assignment
 
 Implemented a solution for the provided QA project using spring boot framework.
 
@@ -31,14 +31,19 @@ Implemented a solution for the provided QA project using spring boot framework.
 
 ## Demo
 
+* Start the server
+```
+mvn spring-boot:run
+```
+
 * Open the browser at http://localhost:8080/
 
-* Use any [REST client console](https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphppikmonn) or [POSTMAN](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en) chrome extensions to test the following RESTful Web Services.
+* Use any [REST client console](https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphppikmonn) or [POSTMAN](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en) chrome extensions to test the following RESTful Web Services:
 
 
-#### POST - To create a new location
+### POST - To create a new location
 
-##### Request
+#### Request
 
 ```http
 POST /createproject
@@ -49,8 +54,8 @@ POST /createproject
     "id": 1,  
     "projectName": "test project number 1",  
     "creationDate": "05112017 00:00:00",  
-    "expiryDate ": "05202017 00:00:00",  
-    “enabled”: True   
+    "expiryDate": "05202017 00:00:00",  
+    "enabled": true,   
     "targetCountries": ["USA", "CANADA", "MEXICO", "BRAZIL"],  
     "projectCost": 5.5,  
     "projectUrl": "http://www.unity3d.com",  
@@ -66,7 +71,7 @@ POST /createproject
 
 ```
 
-##### Response
+#### Response
 
 ```
 HTTP Response Code: 200
@@ -78,15 +83,15 @@ HTTP Response Code: 200
 
 
 
-#### GET - To retrieve a stored project
+### GET - To retrieve a stored project
 
-##### Request
+#### Request
 
 ```http
 GET /requestproject?projectid=1
 ```
 
-##### Response
+#### Response
 
 ```
 HTTP Response Code: 200
