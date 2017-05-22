@@ -36,7 +36,7 @@ Implemented a solution for the provided QA project using spring boot framework.
 mvn spring-boot:run
 ```
 
-* Open the browser at http://localhost:8080/
+* Application will now run at http://localhost:8080/
 
 * Use any [REST client console](https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphppikmonn) or [POSTMAN](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en) chrome extensions to test the following RESTful Web Services:
 
