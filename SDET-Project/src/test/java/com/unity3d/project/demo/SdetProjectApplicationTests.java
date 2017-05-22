@@ -159,6 +159,29 @@ public class SdetProjectApplicationTests {
 				.content(objectMapper.writeValueAsString(s))).andDo(print());
 	}
 
+
+	/**
+	 * Test to check incomplete or partial '/createproject' request like empty or null projectName/projectId/etc.
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreateProjectNullRequest() throws Exception {
+//		String jsonRes = Json.createObjectBuilder().add("message", "Please input valid projectid AND projectCost AND projectName!!!")
+//				.build().toString();
+		
+		Project project = new Project(0, "Project Name", true, null, null,
+				null, 22.245, null, Arrays.asList(new KeysWrapper(25, "movie"), new KeysWrapper(30, "sports")));
+
+		// Expect an HTTP 400 BAD REQUEST error
+		this.mockMvc
+				.perform(post("/createproject").contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(project)))
+				.andDo(print()).andExpect(status().is4xxClientError()).andDo(print());
+//				.andExpect(content().string(jsonRes)).andDo(print());
+	}
+
+	
+	
 	/**
 	 * Test to check whether there's any error when user sends invalid format
 	 * data to server
@@ -169,32 +192,6 @@ public class SdetProjectApplicationTests {
 		this.mockMvc.perform(post("/createproject").contentType(MediaType.APPLICATION_JSON).param("firstName", "onkar")
 				.param("lastName", "ganjewar")).andExpect(status().is4xxClientError()).andDo(print());
 	}
-
-	// test_addNilThrowsNullPointerException()
-	// {
-	// try {
-	// foo.add(NIL); // we expect a NullPointerException here
-	// fail("No NullPointerException"); // cause the test to fail if we reach
-	// this
-	// } catch (NullNullPointerException e) {
-	// // OK got the expected exception
-	// }
-	// }
-
-	// public void shouldThrowException() {
-	// assertThatThrownBy(() ->
-	// methodThrowingException()).hasCause(InetAddressException .class);
-	// }
-
-	// @Test
-	// public void thrown_exception_assertion_examples() {
-	// // @format:off
-	// assertThatThrownBy(() -> { throw new IllegalArgumentException("boom!");
-	// })
-	// .isInstanceOf(IllegalArgumentException.class)
-	// .hasMessageContaining("boom");
-	// // @format:on
-	// }
 
 	/**
 	 * Test to check whether the project is created successfully and whether it
@@ -302,6 +299,7 @@ public class SdetProjectApplicationTests {
 	 */
 	@Test
 	public void testSayHelloWorld() throws Exception {
+//		.content("{\"userName\":\"testUserDetails\",\"firstName\":\"xxx\",\"lastName\":\"xxx\",\"password\":\"xxx\"}"))
 		this.mockMvc.perform(get("/hello").accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
 				.andDo(print()).andExpect(status().isOk())
 				.andExpect(content().contentType("application/json;charset=UTF-8")).andDo(print());

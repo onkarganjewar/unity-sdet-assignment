@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
 				.build()
 				.toString();
 
-		logger.error("IllegalArgumentException occurred with message = "+e.getMessage());
+		logger.error("IllegalArgumentException occurred "+e.getMessage());
 		return new ResponseEntity<Object>(json, headers, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 	
