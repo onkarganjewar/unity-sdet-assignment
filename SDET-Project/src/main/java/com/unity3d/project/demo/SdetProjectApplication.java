@@ -4,9 +4,11 @@ import org.springframework.boot.SpringApplication;
 
 import org.springframework.boot.builder.SpringApplicationBuilder; 
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
+@EnableAspectJAutoProxy
 @SpringBootApplication(scanBasePackages = { "com.unity3d.project" }, exclude = org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration.class)
 public class SdetProjectApplication extends SpringBootServletInitializer {
 
