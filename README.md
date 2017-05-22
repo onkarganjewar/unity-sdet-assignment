@@ -46,6 +46,9 @@ Implemented a solution for the provided QA project using spring boot framework.
 
 * Application will now run at http://localhost:8080/
 
+**NOTE:** Project logs file will get stored under directory __'SDET-Project/logs/'__ by the name __'project-logging.log'__
+
+
 * Use any [REST client console](https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphppikmonn) or [POSTMAN](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en) chrome extensions to test the following RESTful Web Services:
 
 
