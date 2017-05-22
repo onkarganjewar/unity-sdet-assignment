@@ -5,6 +5,18 @@ public class KeysWrapper {
 	private double number;
 	private String keyword;
 
+	public KeysWrapper() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+	public KeysWrapper(double number, String keyword) {
+		super();
+		this.number = number;
+		this.keyword = keyword;
+	}
+
+
 	public double getNumber() {
 		return number;
 	}

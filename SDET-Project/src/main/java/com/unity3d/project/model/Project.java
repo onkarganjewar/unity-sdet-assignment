@@ -133,9 +133,9 @@ public class Project {
 
 	@Override
 	public String toString() {
-		return "Project [id=" + id + ", projectName=" + projectName + ", enabled=" + enabled + ", expiryDate="
-				+ expiryDate + ", targetCountries=" + targetCountries + ", projectCost=" + projectCost + ", projectUrl="
-				+ projectUrl + ", targetKeys=" + targetKeys + "]";
+		return "Project [id=" + id + ", projectName=" + projectName + ", cost = " + projectCost + ", enabled=" + enabled
+				+ ", expiryDate=" + expiryDate + ", targetCountries=" + targetCountries + ", projectCost=" + projectCost
+				+ ", projectUrl=" + projectUrl + ", targetKeys=" + targetKeys + "]";
 	}
 
 }
