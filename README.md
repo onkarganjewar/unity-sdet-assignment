@@ -61,23 +61,22 @@ POST /createproject
 ```
 
 ```json
-{  
-    "id": 1,  
-    "projectName": "test project number 1",  
-    "creationDate": "05112017 00:00:00",  
-    "expiryDate": "05202017 00:00:00",  
-    "enabled": true,   
-    "targetCountries": ["USA", "CANADA", "MEXICO", "BRAZIL"],  
-    "projectCost": 5.5,  
-    "projectUrl": "http://www.unity3d.com",  
-    "targetKeys": [{  
-            "number": 25,  
-            "keyword": "movie"  
-        },  
-        {  
-            "number": 30,  
-            "keyword": "sports"  
-        }]  
+{
+    "id": 9,
+    "projectName": "test project number 9",
+    "creationDate": "05112019 00:00:00",
+    "enabled": true,
+    "expiryDate": "05202021 00:00:00",
+    "targetCountries": ["INDIA", "USA"],
+    "projectCost": 22.5,
+    "projectUrl": "https://www.google.com",
+    "targetKeys": [{
+        "number": 15,
+        "keyword": "movie"
+    }, {
+        "number": 30,
+        "keyword": "games"
+    }]
 }
 
 ```
@@ -110,10 +109,9 @@ HTTP Response Code: 200
 
 
 ```json
-{  
-    "projectName":"test project number 1",  
-    "projectCost": 5.5,  
-    "projectUrl": "http://www.unity3d.com"  
+{
+    "projectName": "test project number 9",
+    "projectCost": 22.5,
+    "projectUrl": "https://www.google.com"
 }
-
 ```
