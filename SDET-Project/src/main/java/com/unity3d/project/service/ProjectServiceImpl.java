@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.unity3d.project.controller.ProjectController;
+import com.unity3d.project.exception.ProjectException;
 import com.unity3d.project.model.KeysWrapper;
 import com.unity3d.project.model.Project;
-
 
 @Service("ProjectService")
 public class ProjectServiceImpl implements ProjectService {
@@ -29,7 +29,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private static final String dataFile = "Projects.txt";
 
 	@Override
-	public Project getProjectById(Long id) {
+	public Project getProjectById(Long id) throws ProjectException {
 
 		// This will reference one line at a time
 		String line = null;
@@ -41,19 +41,29 @@ public class ProjectServiceImpl implements ProjectService {
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while ((line = bufferedReader.readLine()) != null) {
 				Project project = new Gson().fromJson(line, Project.class);
-				// ● Service should never return a project if projectUrl is null
-				// ● Service should always return projects which are enabled,
-				if (project.isEnabled() == false || project.getProjectUrl() == null || project.getExpiryDate() == null)
-					continue;
-
-				// ● Service should never return a project which is expired
-				if (!checkExpiryDate(project.getExpiryDate()))
-					continue;
-				logger.info(project.toString());
-
 				if (project.getId() == id) {
+
+					// Service should always return projects which are enabled,
+					if (project.isEnabled() == false) {
+						throw new ProjectException("Project is not enabled. Cannot retrieve the project.");
+					}
+
+					// Service should never return a project if projectUrl is null
+					if (project.getProjectUrl() == null) {
+						throw new ProjectException("Project URL is empty. Cannot retrieve the project.");
+					}
+
+					if (project.getExpiryDate() == null) {
+						throw new ProjectException("Project expiry date is undefined. Cannot retrieve the project.");
+					}
+
+					// Service should never return a project which is expired
+					if (!checkExpiryDate(project.getExpiryDate())) {
+						throw new ProjectException("Sorry. Project is expired");
+					}
 					return project;
 				}
+				logger.info(project.toString());
 			}
 			bufferedReader.close();
 		} catch (FileNotFoundException ex) {
@@ -61,32 +71,47 @@ public class ProjectServiceImpl implements ProjectService {
 			logger.debug("Unable to open file '" + dataFile + "'");
 		} catch (IOException ex) {
 			System.out.println("Error reading file '" + dataFile + "'");
-			// ex.printStackTrace();
+			logger.error(ex.getClass().getCanonicalName());
 		}
 		return null;
 	}
 
 	@Override
-	public List<Project> getProjectListByCountry(String country) {
+	public List<Project> getProjectListByCountry(String country) throws ProjectException {
 
 		/** Stores a list of project records **/
 		List<Project> projectsList = new ArrayList<Project>();
 		String line = null;
 		try {
-			// FileReader reads text files in the default encoding.
 			FileReader fileReader = new FileReader(dataFile);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while ((line = bufferedReader.readLine()) != null) {
 				Project project = new Gson().fromJson(line, Project.class);
-				logger.info("$$$$$$$$$$$$$$$$$$$$ "+project.toString());
-				// ● Service should never return a project if projectUrl is null
-				// ● Service should always return projects which are enabled,
-				if (project.isEnabled() == false || project.getProjectUrl() == null || project.getExpiryDate() == null)
-					continue;
+				logger.info("Project found =  " + project.toString());
 
-				// ● Service should never return a project which is expired
-				if (!checkExpiryDate(project.getExpiryDate()))
+				// Service should always return projects which are
+				// enabled,
+				if (project.isEnabled() == false) {
 					continue;
+				}
+
+				// Service should never return a project if projectUrl
+				// is null
+				if (project.getProjectUrl() == null) {
+					continue;
+				}
+
+				// Service should never return a project which is
+				// expired
+				if (project.getExpiryDate() == null) {
+					continue;
+				}
+
+				// Service should never return a project which is
+				// expired
+				if (!checkExpiryDate(project.getExpiryDate())) {
+					continue;
+				}
 				List<String> countries = project.getTargetCountries();
 				for (String s : countries) {
 					if (s.equalsIgnoreCase(country)) {
@@ -102,17 +127,21 @@ public class ProjectServiceImpl implements ProjectService {
 			logger.debug("Unable to open file '" + dataFile + "'");
 		} catch (IOException ex) {
 			logger.error("Error reading file '" + dataFile + "'");
-			// ex.printStackTrace();
+			logger.error(ex.getStackTrace().toString());// ex.printStackTrace();
 		}
 
-		if (projectsList.isEmpty())
-			return null;
+		if (projectsList.isEmpty()) {
+			String classMethodName = this.getClass().getName()+"."+ Thread.currentThread().getStackTrace()[1].getMethodName();
+			String errorMessage = "Record matching all the criteria not found with given target country name";
+			logger.error("Exception occurred in "+ classMethodName + " due to "+errorMessage);
+			throw new ProjectException(errorMessage);
+		}
 		return projectsList;
 
 	}
 
 	@Override
-	public List<Project> getAllProjects() throws IllegalArgumentException {
+	public List<Project> getAllProjects() throws IllegalArgumentException, ProjectException {
 
 		/** Stores a list of project records **/
 		List<Project> projectsList = new ArrayList<Project>();
@@ -124,16 +153,26 @@ public class ProjectServiceImpl implements ProjectService {
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while ((line = bufferedReader.readLine()) != null) {
 				Project project = new Gson().fromJson(line, Project.class);
-				// ● Service should never return a project if projectUrl is null
-				// ● Service should always return projects which are enabled,
-				if (project.isEnabled() == false || project.getProjectUrl() == null || project.getExpiryDate() == null)
+				// Service should always return projects which are enabled,
+				if (project.isEnabled() == false) {
 					continue;
+				}
 
-				// ● Service should never return a project which is expired
-				if (!checkExpiryDate(project.getExpiryDate()))
+				// Service should never return a project if projectUrl is null
+				else if (project.getProjectUrl() == null) {
 					continue;
+				}
 
-				projectsList.add(project);
+				// Service should never return a project which is expired
+				else if (project.getExpiryDate() == null) {
+					continue;
+				}
+
+				// Service should never return a project which is expired
+				else if (!checkExpiryDate(project.getExpiryDate())) {
+					continue;
+				} else
+					projectsList.add(project);
 			}
 			bufferedReader.close();
 		} catch (FileNotFoundException ex) {
@@ -141,12 +180,106 @@ public class ProjectServiceImpl implements ProjectService {
 			logger.debug("Unable to open file '" + dataFile + "'");
 		} catch (IOException ex) {
 			logger.error("Error reading file '" + dataFile + "'");
-			// ex.printStackTrace();
+			logger.error("Exception occurred --- "+ex.getClass().getName());// ex.printStackTrace();
+		}
+
+		if (projectsList.isEmpty()) {
+			String classMethodName = this.getClass().getName()+"."+ Thread.currentThread().getStackTrace()[1].getMethodName();
+			String errorMessage = "There's no data in the input file....!!!!";
+			logger.error("Exception occurred in "+ classMethodName + " due to "+errorMessage);
+			throw new IllegalArgumentException(errorMessage);
+		}
+		return projectsList;
+	}
+
+	@Override
+	public List<Project> getProjectByKeyword(String keyword) throws ProjectException {
+		/** Stores a list of project records **/
+		List<Project> projectsList = new ArrayList<Project>();
+
+		String line = null;
+		try {
+			// FileReader reads text files in the default encoding.
+			FileReader fileReader = new FileReader(dataFile);
+			@SuppressWarnings("resource")
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			while ((line = bufferedReader.readLine()) != null) {
+				Project project = new Gson().fromJson(line, Project.class);
+				// Service should never return a project if projectUrl is null
+				// Service should always return projects which are enabled,
+				if (project.isEnabled() == false || project.getProjectUrl() == null || project.getExpiryDate() == null)
+					continue;
+
+				// Service should never return a project which is expired
+				if (!checkExpiryDate(project.getExpiryDate()))
+					continue;
+				logger.info(project.toString());
+
+				List<KeysWrapper> keyset = project.getTargetKeys();
+				for (KeysWrapper k : keyset) {
+					if (k.getKeyword().equalsIgnoreCase(keyword)) {
+						logger.info("FOUND KeyWord!!!!!!!!");
+
+						// Service should always return projects which are
+						// enabled,
+						if (project.isEnabled() == false) {
+							throw new ProjectException("Project is not enabled. Cannot retrieve the project.");
+						}
+
+						// Service should never return a project if projectUrl
+						// is null
+						else if (project.getProjectUrl() == null) {
+							throw new ProjectException("Project URL is empty. Cannot retrieve the project.");
+						}
+
+						// Service should never return a project which is
+						// expired
+						else if (project.getExpiryDate() == null) {
+							throw new ProjectException(
+									"Project expiry date is undefined. Cannot retrieve the project.");
+						}
+
+						// Service should never return a project which is
+						// expired
+						else if (!checkExpiryDate(project.getExpiryDate())) {
+							throw new ProjectException("Sorry. Project is expired");
+						} else
+							projectsList.add(project);
+					}
+				}
+			}
+			bufferedReader.close();
+		} catch (FileNotFoundException ex) {
+			logger.error(ex.getMessage());
+			logger.debug("Unable to open file '" + dataFile + "'");
+		} catch (IOException ex) {
+			logger.error("Error reading file '" + dataFile + "'");
+			logger.error(ex.getClass().getCanonicalName());// ex.printStackTrace();
 		}
 
 		if (projectsList.isEmpty())
-			throw new IllegalArgumentException("There's no data in the input file....!!!!");
+			return null;
+		return projectsList;
+	}
 
+	@Override
+	public List<Project> filterProjectListByNumberMin(List<Project> projects, double number) {
+		/** Stores a list of project records **/
+		List<Project> projectsList = new ArrayList<Project>();
+
+		for (Project p : projects) {
+			List<KeysWrapper> keyset = p.getTargetKeys();
+			for (KeysWrapper k : keyset) {
+				if (k.getNumber() >= number) {
+					logger.info("FOUND Greater Number!!!!!!!!");
+					projectsList.add(p);
+					break;
+				}
+			}
+		}
+
+		if (projectsList.isEmpty())
+			return null;
 		return projectsList;
 	}
 
@@ -197,7 +330,7 @@ public class ProjectServiceImpl implements ProjectService {
 		yearStr.append(dateArr[6]);
 		yearStr.append(dateArr[7]);
 		int year = Integer.parseInt(yearStr.toString());
-		// ● Service should never return a project which is expired
+		// Service should never return a project which is expired
 		String expDate = "Expiry Date = " + day + "/" + month + "/" + year;
 
 		Calendar myCal = Calendar.getInstance();
@@ -219,72 +352,6 @@ public class ProjectServiceImpl implements ProjectService {
 			return false;
 		}
 		return true;
-	}
-
-	@Override
-	public List<Project> getProjectByKeyword(String keyword) {
-		/** Stores a list of project records **/
-		List<Project> projectsList = new ArrayList<Project>();
-
-		String line = null;
-		try {
-			// FileReader reads text files in the default encoding.
-			FileReader fileReader = new FileReader(dataFile);
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
-			while ((line = bufferedReader.readLine()) != null) {
-				Project project = new Gson().fromJson(line, Project.class);
-				// ● Service should never return a project if projectUrl is null
-				// ● Service should always return projects which are enabled,
-				if (project.isEnabled() == false || project.getProjectUrl() == null || project.getExpiryDate() == null)
-					continue;
-
-				// ● Service should never return a project which is expired
-				if (!checkExpiryDate(project.getExpiryDate()))
-					continue;
-				logger.info(project.toString());
-
-				List<KeysWrapper> keyset = project.getTargetKeys();
-				for (KeysWrapper k : keyset) {
-					if (k.getKeyword().equalsIgnoreCase(keyword)) {
-						logger.info("FOUND KeyWord!!!!!!!!");
-						projectsList.add(project);
-						break;
-					}
-				}
-			}
-			bufferedReader.close();
-		} catch (FileNotFoundException ex) {
-			logger.error(ex.getMessage());
-			logger.debug("Unable to open file '" + dataFile + "'");
-		} catch (IOException ex) {
-			logger.error("Error reading file '" + dataFile + "'");
-			// ex.printStackTrace();
-		}
-
-		if (projectsList.isEmpty())
-			return null;
-		return projectsList;
-	}
-
-	@Override
-	public List<Project> filterProjectListByNumberMin(List<Project> projects, double number) {
-		/** Stores a list of project records **/
-		List<Project> projectsList = new ArrayList<Project>();
-
-		for (Project p: projects) {
-			List<KeysWrapper> keyset = p.getTargetKeys();
-			for (KeysWrapper k : keyset) {
-				if (k.getNumber() >= number) {
-					logger.info("FOUND Greater Number!!!!!!!!");
-					projectsList.add(p);
-					break;
-				}
-			}
-		}
-
-		if (projectsList.isEmpty())
-			return null;
-		return projectsList;
 	}
 
 }

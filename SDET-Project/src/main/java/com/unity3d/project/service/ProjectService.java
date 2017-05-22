@@ -2,7 +2,7 @@ package com.unity3d.project.service;
 
 import java.util.List;
 
-
+import com.unity3d.project.exception.ProjectException;
 import com.unity3d.project.model.Project;
 
 
@@ -12,23 +12,26 @@ public interface ProjectService {
 	 * Return the project with matching ID regardless of any other parameters
 	 * @param id ID of the project to be searched
 	 * @return Project POJO if the object is found, else returns null
+	 * @throws ProjectException In case there's any error such as project is not enabled/expired/url is null
 	 */
-	public Project getProjectById(Long id);
+	public Project getProjectById(Long id) throws ProjectException;
 	
 	/**
 	 * Return the list of Projects belonging to the same target country
 	 * @param country Target country name
 	 * @return Project List if there are any projects present, else returns null
+	 * @throws ProjectException In case there's any error such as project is not enabled/expired/url is null
 	 */
-	public List<Project> getProjectListByCountry(String country);
+	public List<Project> getProjectListByCountry(String country) throws ProjectException;
 	
 	
 	/**
 	 * Fetch all the projects stored in the database.
 	 * @return Project List
 	 * @throws IllegalArgumentException If the data input file is empty
+	 * @throws ProjectException In case there's any error such as project is not enabled/expired/url is null
 	 */
-	public List<Project> getAllProjects()throws IllegalArgumentException;
+	public List<Project> getAllProjects()throws IllegalArgumentException, ProjectException;
 	
 	
 //	/**
@@ -44,8 +47,9 @@ public interface ProjectService {
 	 * Return the list of Projects having the given keyword
 	 * @param keyword 
 	 * @return Project List if there are any such projects present, else returns null
+	 * @throws ProjectException In case there's any error such as project is not enabled/expired/url is null
 	 */
-	public List<Project> getProjectByKeyword(String keyword);
+	public List<Project> getProjectByKeyword(String keyword) throws ProjectException;
 
 
 
