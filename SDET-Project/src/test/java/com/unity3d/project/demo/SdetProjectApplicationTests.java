@@ -1,20 +1,22 @@
 package com.unity3d.project.demo;
 
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,11 +24,12 @@ import com.unity3d.project.controller.ProjectController;
 import com.unity3d.project.model.KeysWrapper;
 import com.unity3d.project.model.Project;
 
+import static org.hamcrest.CoreMatchers.containsString;
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -41,10 +44,14 @@ import javax.json.Json;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { SdetProjectApplication.class })
 @WebAppConfiguration
+@SpringBootTest
 public class SdetProjectApplicationTests {
 
 	@Autowired
-	ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;
+
+	@Rule
+	public final ExpectedException exception = ExpectedException.none();
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
@@ -64,7 +71,8 @@ public class SdetProjectApplicationTests {
 				./* addFilter(new GlobalFilter()) */
 				build();
 
-		// Clear and store sample projects in the "Projects.txt" every time the server is restarted
+		// Clear and store sample projects in the "Projects.txt" every time the
+		// server is restarted
 		initializeProjects();
 
 	}
@@ -114,6 +122,79 @@ public class SdetProjectApplicationTests {
 			}
 		}
 	}
+
+	/**
+	 * Test to check whether createProject throws an exception when different
+	 * type of object is passed as payload
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCreateProjectThrowsException() throws Exception {
+		// String sampleJsonString = String.format("{\"name\": \"String
+		// 1\",\"description\": \"Description\"}");
+
+		// Create a dummy class for sending invalid object to /createproject
+		class Student {
+			String firstName;
+			String password;
+			public Student(String firstName, String password) {
+				super();
+				this.firstName = firstName;
+				this.password = password;
+			}
+		}
+
+		String expectedErrorSubstring = "No serializer found for class com.unity3d.project.demo.SdetProjectApplicationTests";
+		// String expectedErrorSubstring = " no properties discovered to create BeanSerializer ";
+		Student s = new Student("Onkar", "password");
+
+		// arrange/setup --- expect an exception of type jackson.databind.
+		// since @RequestBody is expecting an object of type "Project" 
+		exception.expect(JsonMappingException.class);
+		exception.expectMessage(containsString(expectedErrorSubstring));
+
+		// action/followup
+		this.mockMvc.perform(post("/createproject").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(s))).andDo(print());
+	}
+
+	/**
+	 * Test to check whether there's any error when user sends invalid format
+	 * data to server
+	 */
+	@Test
+	public void testInvalidCreateProjectPayload() throws Exception {
+		// Expect an HTTP 400 BAD REQUEST error
+		this.mockMvc.perform(post("/createproject").contentType(MediaType.APPLICATION_JSON).param("firstName", "onkar")
+				.param("lastName", "ganjewar")).andExpect(status().is4xxClientError()).andDo(print());
+	}
+
+	// test_addNilThrowsNullPointerException()
+	// {
+	// try {
+	// foo.add(NIL); // we expect a NullPointerException here
+	// fail("No NullPointerException"); // cause the test to fail if we reach
+	// this
+	// } catch (NullNullPointerException e) {
+	// // OK got the expected exception
+	// }
+	// }
+
+	// public void shouldThrowException() {
+	// assertThatThrownBy(() ->
+	// methodThrowingException()).hasCause(InetAddressException .class);
+	// }
+
+	// @Test
+	// public void thrown_exception_assertion_examples() {
+	// // @format:off
+	// assertThatThrownBy(() -> { throw new IllegalArgumentException("boom!");
+	// })
+	// .isInstanceOf(IllegalArgumentException.class)
+	// .hasMessageContaining("boom");
+	// // @format:on
+	// }
 
 	/**
 	 * Test to check whether the project is created successfully and whether it
@@ -216,6 +297,7 @@ public class SdetProjectApplicationTests {
 
 	/**
 	 * Dummy test for hello world
+	 * 
 	 * @throws Exception
 	 */
 	@Test
